@@ -8,9 +8,15 @@ import {
   getSpotifyUser,
   playSpotifyTrack,
 } from "./spotify-api";
+import { ResponseCache } from "./response-cache";
 import { queryTracks } from "./tracks";
 
 await ensureSchema(pool);
+
+const trackCache = new ResponseCache<unknown>(
+  Number(Bun.env.TRACK_CACHE_TTL_SECONDS ?? 60) * 1000,
+  Number(Bun.env.TRACK_CACHE_MAX_ENTRIES ?? 200),
+);
 
 const server = Bun.serve({
   port: Number(Bun.env.API_PORT ?? 8000),
@@ -23,7 +29,15 @@ const server = Bun.serve({
     }
 
     if (url.pathname === "/api/tracks") {
-      return json(await queryTracks(pool, url.searchParams));
+      const cacheKey = url.searchParams.toString();
+      const cached = trackCache.get(cacheKey);
+      if (cached) {
+        return json(cached, 200, { "cache-control": "private, max-age=60" });
+      }
+
+      const body = await queryTracks(pool, url.searchParams);
+      trackCache.set(cacheKey, body);
+      return json(body, 200, { "cache-control": "private, max-age=60" });
     }
 
     if (url.pathname === "/api/spotify/login") {
@@ -138,11 +152,12 @@ const server = Bun.serve({
 
 console.log(`API server listening on http://${server.hostname}:${server.port}`);
 
-function json(body: unknown, status = 200): Response {
+function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "content-type": "application/json",
+      ...headers,
     },
   });
 }

@@ -59,6 +59,11 @@ describe("track API query parameters", () => {
     expect(normalizeTrackQuery(params).offset).toBe(60);
   });
 
+  test("caps requested result limits at 100 records", () => {
+    expect(normalizeTrackQuery(new URLSearchParams({ limit: "500" })).limit).toBe(100);
+    expect(normalizeTrackQuery(new URLSearchParams({ limit: "0" })).limit).toBe(1);
+  });
+
   test("normalizes forgotten-favorites filters", () => {
     const params = new URLSearchParams({
       minStreams: "10",
