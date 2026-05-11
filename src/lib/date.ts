@@ -3,13 +3,15 @@ export function formatDateTime(value: string | Date): string {
   const parts = new Intl.DateTimeFormat("zh-TW", {
     timeZone: "Asia/Taipei",
     year: "numeric",
-    month: "numeric",
-    day: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
     hour12: false,
+    hourCycle: "h23",
   }).formatToParts(date);
 
   const lookup = new Map(parts.map((part) => [part.type, part.value]));
-  return `${lookup.get("year")}年${lookup.get("month")}月${lookup.get("day")}日 ${lookup.get("hour")}:${lookup.get("minute")}`;
+  return `${lookup.get("year")}-${lookup.get("month")}-${lookup.get("day")} ${lookup.get("hour")}:${lookup.get("minute")}:${lookup.get("second")}`;
 }

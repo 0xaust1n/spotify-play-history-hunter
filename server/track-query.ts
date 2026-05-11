@@ -21,6 +21,7 @@ export type TrackQuery = {
   offset: number;
   page: number;
   sortRules: TrackSortRule[];
+  strictMode: boolean;
 };
 
 const sortSql: Record<TrackSortColumn, string> = {
@@ -78,6 +79,7 @@ export function normalizeTrackQuery(params: URLSearchParams): TrackQuery {
     offset,
     page: Math.floor(offset / limit) + 1,
     sortRules: parseSortRules(params),
+    strictMode: params.get("strictMode") === "true",
   };
 }
 

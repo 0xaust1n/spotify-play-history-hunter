@@ -11,6 +11,7 @@ describe("track API query parameters", () => {
       offset: 0,
       page: 1,
       sortRules: [],
+      strictMode: false,
     });
   });
 
@@ -32,6 +33,19 @@ describe("track API query parameters", () => {
         { column: "stream_count", order: "desc" },
         { column: "last_streamed", order: "desc" },
       ],
+      strictMode: false,
+    });
+  });
+
+  test("normalizes strict mode only when explicitly true", () => {
+    expect(normalizeTrackQuery(new URLSearchParams({ strictMode: "true" }))).toMatchObject({
+      strictMode: true,
+    });
+    expect(normalizeTrackQuery(new URLSearchParams({ strictMode: "false" }))).toMatchObject({
+      strictMode: false,
+    });
+    expect(normalizeTrackQuery(new URLSearchParams({ strictMode: "1" }))).toMatchObject({
+      strictMode: false,
     });
   });
 

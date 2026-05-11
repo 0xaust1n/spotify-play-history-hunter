@@ -35,6 +35,7 @@ type TracksResponse = {
     column: SortColumn;
     order: SortDirection;
   }>;
+  strictMode: boolean;
 };
 
 const columnLabels: Record<SortColumn, string> = {
@@ -52,6 +53,7 @@ function App() {
   const [artist, setArtist] = useState("");
   const [minStreams, setMinStreams] = useState("");
   const [notPlayedSince, setNotPlayedSince] = useState("");
+  const [strictMode, setStrictMode] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [playlistName, setPlaylistName] = useState("Spotify history playlist");
   const [playlistMaxTracks, setPlaylistMaxTracks] = useState("100");
@@ -82,6 +84,9 @@ function App() {
     if (sortRules.length > 0) {
       params.set("sort", serializeSortRules(sortRules));
     }
+    if (strictMode) {
+      params.set("strictMode", "true");
+    }
 
     setLoading(true);
     setError(null);
@@ -109,7 +114,7 @@ function App() {
       });
 
     return () => controller.abort();
-  }, [artist, minStreams, notPlayedSince, page, sortRules]);
+  }, [artist, minStreams, notPlayedSince, page, sortRules, strictMode]);
 
   const summary = useMemo(() => {
     const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -133,9 +138,12 @@ function App() {
     if (sortRules.length > 0) {
       query.sort = serializeSortRules(sortRules);
     }
+    if (strictMode) {
+      query.strictMode = "true";
+    }
 
     return query;
-  }, [artist, minStreams, notPlayedSince, sortRules]);
+  }, [artist, minStreams, notPlayedSince, sortRules, strictMode]);
 
   async function createPlaylistFromResults() {
     const confirmed = confirm(
@@ -379,6 +387,18 @@ function App() {
                     setPage(1);
                   }}
                 />
+                <label className="flex h-11 items-center justify-between rounded-[8px] bg-[#121212] px-3 text-[13px] font-bold text-white">
+                  <span>Strict mode</span>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-[#1ed760]"
+                    checked={strictMode}
+                    onChange={(event) => {
+                      setStrictMode(event.currentTarget.checked);
+                      setPage(1);
+                    }}
+                  />
+                </label>
                 <button
                   type="button"
                   className="h-10 rounded-full bg-[#1f1f1f] px-5 text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3] transition hover:text-white"
@@ -386,6 +406,7 @@ function App() {
                     setArtist("");
                     setMinStreams("");
                     setNotPlayedSince("");
+                    setStrictMode(false);
                     setSortRules([]);
                     setPage(1);
                   }}
