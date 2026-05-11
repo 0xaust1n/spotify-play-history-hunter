@@ -15,3 +15,8 @@
 
 - Do not run or restart the dev service after every change.
 - Only run the service when explicitly requested or when a UI/manual verification step requires it.
+
+## UI Design
+
+- Before changing UI, review `DESIGN.md` and keep the implementation aligned with its visual theme, component styling, layout principles, typography, color palette, and interaction guidance.
+- If a requested UI change conflicts with `DESIGN.md`, ask for confirmation before implementing the conflicting behavior.
