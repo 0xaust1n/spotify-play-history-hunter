@@ -13,13 +13,7 @@ export function getPaginationItems(currentPage: number, pageCount: number): Pagi
     return [1, "ellipsis", ...range(pageCount - 4, pageCount)];
   }
 
-  return [
-    1,
-    "ellipsis",
-    ...range(currentPage - 2, currentPage + 2),
-    "ellipsis",
-    pageCount,
-  ];
+  return [1, "ellipsis", ...range(currentPage - 2, currentPage + 2), "ellipsis", pageCount];
 }
 
 function range(start: number, end: number): number[] {

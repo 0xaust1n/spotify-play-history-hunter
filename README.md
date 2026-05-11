@@ -58,6 +58,7 @@ SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/api/spotify/callback
 Use the same redirect URI in the Spotify Developer Dashboard.
 
 ## Required environment
+
 - [Bun](https://bun.com/) for website
 - [Orbstack](https://orbstack.dev/) or [Docker](https://www.docker.com/products/docker-desktop/) for DB
 

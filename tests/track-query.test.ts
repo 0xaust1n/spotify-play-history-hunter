@@ -95,9 +95,7 @@ describe("track API query parameters", () => {
         { column: "last_streamed", order: "asc" },
         { column: "track_name", order: "desc" },
       ]),
-    ).toBe(
-      "last_streamed_at ASC, track_name DESC, track_key ASC",
-    );
+    ).toBe("last_streamed_at ASC, track_name DESC, track_key ASC");
   });
 
   test("uses stream count descending as the fallback when no sort rule is active", () => {

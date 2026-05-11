@@ -187,9 +187,7 @@ function App() {
     }
 
     if (!response.ok) {
-      setPlaylistStatus(
-        body.error ?? `Playlist request failed (${response.status})`,
-      );
+      setPlaylistStatus(body.error ?? `Playlist request failed (${response.status})`);
       return;
     }
 
@@ -226,8 +224,7 @@ function App() {
 
     if (!response.ok) {
       setPlaybackStatus(
-        body.error ??
-          "Playback failed. Open Spotify on a device, start any song, then try again.",
+        body.error ?? "Playback failed. Open Spotify on a device, start any song, then try again.",
       );
       return;
     }
@@ -251,13 +248,10 @@ function App() {
             </p>
           </div>
           <div
-            className="grid grid-cols-3 gap-2"
+            className="grid grid-cols-2 gap-2 md:justify-end"
             aria-label="Visible result summary"
           >
-            <SummaryStat
-              value={summary.visibleTracks.toLocaleString()}
-              label="Pages"
-            />
+            <SummaryStat value={summary.visibleTracks.toLocaleString()} label="Pages" />
             <SummaryStat value={total.toLocaleString()} label="Total tracks" />
           </div>
         </header>
@@ -286,16 +280,8 @@ function App() {
             <table className="w-full min-w-[920px] border-collapse">
               <thead>
                 <tr className="border-b border-[#2a2a2a]">
-                  <SortableHeader
-                    column="track_name"
-                    sortRules={sortRules}
-                    onSort={setSortRules}
-                  />
-                  <SortableHeader
-                    column="album_name"
-                    sortRules={sortRules}
-                    onSort={setSortRules}
-                  />
+                  <SortableHeader column="track_name" sortRules={sortRules} onSort={setSortRules} />
+                  <SortableHeader column="album_name" sortRules={sortRules} onSort={setSortRules} />
                   <SortableHeader
                     column="artist_name"
                     sortRules={sortRules}
@@ -322,10 +308,7 @@ function App() {
               <tbody>
                 {!loading && tracks.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="h-36 px-4 text-center align-middle text-[#b3b3b3]"
-                    >
+                    <td colSpan={6} className="h-36 px-4 text-center align-middle text-[#b3b3b3]">
                       No tracks found.
                     </td>
                   </tr>
@@ -350,9 +333,7 @@ function App() {
                       <td className="px-4 py-3 text-[14px] text-[#b3b3b3]">
                         {track.albumName ?? "-"}
                       </td>
-                      <td className="px-4 py-3 text-[14px] text-[#fdfdfd]">
-                        {track.artistName}
-                      </td>
+                      <td className="px-4 py-3 text-[14px] text-[#fdfdfd]">{track.artistName}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-[14px] text-[#b3b3b3]">
                         {formatDateTime(track.firstStreamedAt)}
                       </td>
@@ -377,12 +358,17 @@ function App() {
           >
             <button
               type="button"
-              className="flex h-14 w-full items-center justify-between rounded-t-[8px] px-4 text-[12px] font-bold uppercase tracking-[1.6px] text-white transition hover:bg-[#1f1f1f]"
+              className="flex h-14 w-full items-center justify-between rounded-t-[8px] px-3 text-[12px] font-bold uppercase tracking-[1.6px] text-white transition hover:bg-[#1f1f1f]"
               onClick={() => setFiltersOpen((current) => !current)}
               aria-expanded={filtersOpen}
             >
               <span className={filtersOpen ? "" : "sr-only"}>Filters</span>
-              <span className="text-[#1ed760]">{filtersOpen ? "›" : "‹"}</span>
+              <span
+                className="ml-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#121212] text-[24px] font-bold leading-none text-[#1ed760] shadow-[rgb(42,42,42)_0px_0px_0px_1px_inset]"
+                aria-hidden="true"
+              >
+                {filtersOpen ? "›" : "‹"}
+              </span>
             </button>
 
             {filtersOpen ? (
@@ -464,9 +450,7 @@ function App() {
                   Create public playlist
                 </button>
                 {playlistStatus ? (
-                  <p className="text-[12px] leading-normal text-[#b3b3b3]">
-                    {playlistStatus}
-                  </p>
+                  <p className="text-[12px] leading-normal text-[#b3b3b3]">{playlistStatus}</p>
                 ) : null}
               </div>
             ) : null}
@@ -482,9 +466,7 @@ function App() {
             className="h-9 min-w-9 rounded-full text-[22px] leading-none text-[#b3b3b3] transition hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Previous page"
             disabled={page <= 1 || loading}
-            onClick={() =>
-              setPage((currentPage) => Math.max(currentPage - 1, 1))
-            }
+            onClick={() => setPage((currentPage) => Math.max(currentPage - 1, 1))}
           >
             ‹
           </button>
@@ -519,11 +501,7 @@ function App() {
             className="h-9 min-w-9 rounded-full text-[22px] leading-none text-[#b3b3b3] transition hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Next page"
             disabled={page >= summary.pageCount || loading}
-            onClick={() =>
-              setPage((currentPage) =>
-                Math.min(currentPage + 1, summary.pageCount),
-              )
-            }
+            onClick={() => setPage((currentPage) => Math.min(currentPage + 1, summary.pageCount))}
           >
             ›
           </button>
@@ -536,9 +514,7 @@ function App() {
 function SummaryStat({ value, label }: { value: string; label: string }) {
   return (
     <span className="min-w-[94px] rounded-[8px] bg-[#1f1f1f] px-3 py-2 text-[12px] text-[#b3b3b3] shadow-[rgb(18,18,18)_0px_1px_0px,rgb(77,77,77)_0px_0px_0px_1px_inset]">
-      <strong className="block text-[20px] font-bold leading-tight text-white">
-        {value}
-      </strong>
+      <strong className="block text-[20px] font-bold leading-tight text-white">{value}</strong>
       {label}
     </span>
   );
@@ -600,9 +576,7 @@ function DateFilterInput({
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
       >
-        <span className={value ? "text-white" : "text-[#7c7c7c]"}>
-          {value || "YYYY-MM-DD"}
-        </span>
+        <span className={value ? "text-white" : "text-[#7c7c7c]"}>{value || "YYYY-MM-DD"}</span>
         <span className="text-[#1ed760]" aria-hidden="true">
           ▾
         </span>
@@ -657,39 +631,31 @@ function SortableHeader({
 }) {
   const activeIndex = sortRules.findIndex((rule) => rule.column === column);
   const activeRule = activeIndex === -1 ? null : sortRules[activeIndex];
-  const marker = activeRule
-    ? activeRule.direction === "desc"
-      ? "↓"
-      : "↑"
-    : "";
+  const marker = activeRule ? (activeRule.direction === "desc" ? "↓" : "↑") : "";
   const sortPosition = activeIndex === -1 ? null : activeIndex + 1;
 
   return (
-    <th className="sticky top-0 bg-[#181818] px-4 py-3 text-left align-middle text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
+    <th className="sticky top-0 overflow-visible bg-[#181818] px-4 py-3 text-left align-middle text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
       <button
         type="button"
-        className={`inline-flex min-h-7 w-full items-center gap-1.5 border-0 bg-transparent p-0 text-left uppercase tracking-[1.4px] text-inherit transition hover:text-[#1ed760] ${
+        className={`inline-flex min-h-7 w-full items-center gap-2 border-0 bg-transparent p-0 text-left uppercase tracking-[1.4px] text-inherit transition hover:text-[#1ed760] ${
           align === "right" ? "justify-end text-right" : "justify-start"
         }`}
         aria-sort={
-          activeRule
-            ? activeRule.direction === "desc"
-              ? "descending"
-              : "ascending"
-            : "none"
+          activeRule ? (activeRule.direction === "desc" ? "descending" : "ascending") : "none"
         }
         onClick={() => onSort(toggleSortRule(sortRules, column))}
       >
-        <span>{columnLabels[column]}</span>
+        <span className="min-w-0">{columnLabels[column]}</span>
         <span
-          className="inline-block w-3 text-[14px] leading-none text-[#1ed760]"
+          className="inline-flex w-4 shrink-0 justify-center text-[14px] leading-none text-[#1ed760]"
           aria-hidden="true"
         >
           {marker}
         </span>
         {sortPosition ? (
           <span
-            className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#1ed760] text-[11px] leading-none text-black"
+            className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1ed760] text-[11px] leading-none text-black"
             aria-label={`Sort priority ${sortPosition}`}
           >
             {sortPosition}

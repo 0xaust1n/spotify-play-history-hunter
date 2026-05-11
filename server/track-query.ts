@@ -89,8 +89,9 @@ export function getTrackOrderBy(rules: TrackSortRule[]): string {
   }
 
   return [
-    ...rules.map(({ column, order }) =>
-      `${sortSql[column]} ${order.toUpperCase()}${nullsLastColumns.has(column) ? " NULLS LAST" : ""}`,
+    ...rules.map(
+      ({ column, order }) =>
+        `${sortSql[column]} ${order.toUpperCase()}${nullsLastColumns.has(column) ? " NULLS LAST" : ""}`,
     ),
     "track_key ASC",
   ].join(", ");

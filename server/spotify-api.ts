@@ -29,15 +29,13 @@ export type SpotifyPlaylist = {
   };
 };
 
-const spotifyScope =
-  "playlist-modify-public user-modify-playback-state user-read-playback-state";
+const spotifyScope = "playlist-modify-public user-modify-playback-state user-read-playback-state";
 
 export function getSpotifyConfig(): SpotifyConfig {
   return {
     clientId: Bun.env.SPOTIFY_CLIENT_ID ?? "",
     clientSecret: Bun.env.SPOTIFY_CLIENT_SECRET ?? "",
-    redirectUri:
-      Bun.env.SPOTIFY_REDIRECT_URI ?? "http://127.0.0.1:8000/api/spotify/callback",
+    redirectUri: Bun.env.SPOTIFY_REDIRECT_URI ?? "http://127.0.0.1:8000/api/spotify/callback",
   };
 }
 

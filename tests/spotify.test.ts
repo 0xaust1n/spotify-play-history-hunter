@@ -6,9 +6,7 @@ import {
   type SpotifyHistoryEntry,
 } from "../src/lib/spotify";
 
-const entry = (
-  overrides: Partial<SpotifyHistoryEntry>,
-): SpotifyHistoryEntry => ({
+const entry = (overrides: Partial<SpotifyHistoryEntry>): SpotifyHistoryEntry => ({
   ts: "2023-01-01T00:00:00Z",
   ms_played: 180000,
   master_metadata_track_name: "Fragile",

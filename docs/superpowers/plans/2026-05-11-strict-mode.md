@@ -13,6 +13,7 @@
 ### Task 1: Query Parameter Support
 
 **Files:**
+
 - Modify: `server/track-query.ts`
 - Modify: `tests/track-query.test.ts`
 
@@ -24,6 +25,7 @@
 ### Task 2: SQL Filtering
 
 **Files:**
+
 - Modify: `server/tracks.ts`
 - Create: `tests/tracks.test.ts`
 
@@ -35,6 +37,7 @@
 ### Task 3: Sidebar Toggle
 
 **Files:**
+
 - Modify: `src/main.tsx`
 
 - [ ] **Step 1: Add** `strictMode` state.
@@ -45,6 +48,7 @@
 ### Task 4: Verification
 
 **Files:**
+
 - Read: `package.json`
 
 - [ ] **Step 1: Run** `rtk bun test` and expect all tests pass.

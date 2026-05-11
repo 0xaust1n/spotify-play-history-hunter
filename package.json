@@ -8,6 +8,8 @@
     "dev:api": "bun --watch server/index.ts",
     "dev:web": "vite --host 127.0.0.1",
     "build": "vite build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "import": "bun run scripts/import-spotify.ts",
     "migrate": "bun run scripts/import-spotify.ts --reset",
     "start": "bun run server/index.ts",
@@ -28,6 +30,7 @@
     "@types/pg": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "prettier": "^3.8.3",
     "tailwindcss": "^4.3.0",
     "typescript": "latest"
   }

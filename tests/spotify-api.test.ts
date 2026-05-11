@@ -19,9 +19,7 @@ describe("spotify api helpers", () => {
     expect(url.origin + url.pathname).toBe("https://accounts.spotify.com/authorize");
     expect(url.searchParams.get("client_id")).toBe("client-id");
     expect(url.searchParams.get("response_type")).toBe("code");
-    expect(url.searchParams.get("redirect_uri")).toBe(
-      "http://127.0.0.1:8000/api/spotify/callback",
-    );
+    expect(url.searchParams.get("redirect_uri")).toBe("http://127.0.0.1:8000/api/spotify/callback");
     expect(url.searchParams.get("scope")).toBe(
       "playlist-modify-public user-modify-playback-state user-read-playback-state",
     );
