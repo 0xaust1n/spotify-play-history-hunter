@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/style.css";
 import { createRoot } from "react-dom/client";
-import { formatDateTime } from "./lib/date";
+import { formatDateInput, formatDateTime, parseDateInput } from "./lib/date";
 import { getPaginationItems } from "./lib/pagination";
 import {
   serializeSortRules,
@@ -121,7 +123,13 @@ function App() {
     const to = Math.min(page * pageSize, total);
     const pageCount = Math.max(Math.ceil(total / pageSize), 1);
     const paginationItems = getPaginationItems(page, pageCount);
-    return { pageCount, paginationItems, from, to, visibleTracks: tracks.length };
+    return {
+      pageCount,
+      paginationItems,
+      from,
+      to,
+      visibleTracks: tracks.length,
+    };
   }, [page, total, tracks.length]);
 
   const currentQuery = useMemo(() => {
@@ -179,7 +187,9 @@ function App() {
     }
 
     if (!response.ok) {
-      setPlaylistStatus(body.error ?? `Playlist request failed (${response.status})`);
+      setPlaylistStatus(
+        body.error ?? `Playlist request failed (${response.status})`,
+      );
       return;
     }
 
@@ -240,13 +250,15 @@ function App() {
               Search by artist and review song-level play counts.
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-2" aria-label="Visible result summary">
-            <SummaryStat value={summary.visibleTracks.toLocaleString()} label="This page" />
-            <SummaryStat value={total.toLocaleString()} label="Total tracks" />
+          <div
+            className="grid grid-cols-3 gap-2"
+            aria-label="Visible result summary"
+          >
             <SummaryStat
-              value={`${summary.from.toLocaleString()}-${summary.to.toLocaleString()}`}
-              label="Visible"
+              value={summary.visibleTracks.toLocaleString()}
+              label="Pages"
             />
+            <SummaryStat value={total.toLocaleString()} label="Total tracks" />
           </div>
         </header>
 
@@ -274,9 +286,21 @@ function App() {
             <table className="w-full min-w-[920px] border-collapse">
               <thead>
                 <tr className="border-b border-[#2a2a2a]">
-                  <SortableHeader column="track_name" sortRules={sortRules} onSort={setSortRules} />
-                  <SortableHeader column="album_name" sortRules={sortRules} onSort={setSortRules} />
-                  <SortableHeader column="artist_name" sortRules={sortRules} onSort={setSortRules} />
+                  <SortableHeader
+                    column="track_name"
+                    sortRules={sortRules}
+                    onSort={setSortRules}
+                  />
+                  <SortableHeader
+                    column="album_name"
+                    sortRules={sortRules}
+                    onSort={setSortRules}
+                  />
+                  <SortableHeader
+                    column="artist_name"
+                    sortRules={sortRules}
+                    onSort={setSortRules}
+                  />
                   <SortableHeader
                     column="first_streamed"
                     sortRules={sortRules}
@@ -298,7 +322,10 @@ function App() {
               <tbody>
                 {!loading && tracks.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="h-36 px-4 text-center align-middle text-[#b3b3b3]">
+                    <td
+                      colSpan={6}
+                      className="h-36 px-4 text-center align-middle text-[#b3b3b3]"
+                    >
                       No tracks found.
                     </td>
                   </tr>
@@ -308,22 +335,24 @@ function App() {
                       key={track.trackKey}
                       className="border-b border-[#242424] transition-colors hover:bg-[#1f1f1f]"
                     >
-                    <td className="px-4 py-3 text-[14px] font-bold text-white">
-                      <button
-                        type="button"
-                        className="text-left transition hover:text-[#1ed760] hover:underline disabled:cursor-not-allowed disabled:text-[#7c7c7c]"
-                        disabled={!track.spotifyTrackUri}
-                        onClick={() => {
-                          void playTrack(track);
-                        }}
-                      >
-                        {track.trackName}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 text-[14px] text-[#b3b3b3]">
-                      {track.albumName ?? "-"}
-                    </td>
-                    <td className="px-4 py-3 text-[14px] text-[#fdfdfd]">{track.artistName}</td>
+                      <td className="px-4 py-3 text-[14px] font-bold text-white">
+                        <button
+                          type="button"
+                          className="text-left transition hover:text-[#1ed760] hover:underline disabled:cursor-not-allowed disabled:text-[#7c7c7c]"
+                          disabled={!track.spotifyTrackUri}
+                          onClick={() => {
+                            void playTrack(track);
+                          }}
+                        >
+                          {track.trackName}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-[14px] text-[#b3b3b3]">
+                        {track.albumName ?? "-"}
+                      </td>
+                      <td className="px-4 py-3 text-[14px] text-[#fdfdfd]">
+                        {track.artistName}
+                      </td>
                       <td className="whitespace-nowrap px-4 py-3 text-[14px] text-[#b3b3b3]">
                         {formatDateTime(track.firstStreamedAt)}
                       </td>
@@ -378,10 +407,9 @@ function App() {
                     setPage(1);
                   }}
                 />
-                <FilterInput
+                <DateFilterInput
                   label="Not played since"
                   value={notPlayedSince}
-                  type="date"
                   onChange={(value) => {
                     setNotPlayedSince(value);
                     setPage(1);
@@ -436,7 +464,9 @@ function App() {
                   Create public playlist
                 </button>
                 {playlistStatus ? (
-                  <p className="text-[12px] leading-normal text-[#b3b3b3]">{playlistStatus}</p>
+                  <p className="text-[12px] leading-normal text-[#b3b3b3]">
+                    {playlistStatus}
+                  </p>
                 ) : null}
               </div>
             ) : null}
@@ -452,7 +482,9 @@ function App() {
             className="h-9 min-w-9 rounded-full text-[22px] leading-none text-[#b3b3b3] transition hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Previous page"
             disabled={page <= 1 || loading}
-            onClick={() => setPage((currentPage) => Math.max(currentPage - 1, 1))}
+            onClick={() =>
+              setPage((currentPage) => Math.max(currentPage - 1, 1))
+            }
           >
             ‹
           </button>
@@ -487,7 +519,11 @@ function App() {
             className="h-9 min-w-9 rounded-full text-[22px] leading-none text-[#b3b3b3] transition hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Next page"
             disabled={page >= summary.pageCount || loading}
-            onClick={() => setPage((currentPage) => Math.min(currentPage + 1, summary.pageCount))}
+            onClick={() =>
+              setPage((currentPage) =>
+                Math.min(currentPage + 1, summary.pageCount),
+              )
+            }
           >
             ›
           </button>
@@ -500,7 +536,9 @@ function App() {
 function SummaryStat({ value, label }: { value: string; label: string }) {
   return (
     <span className="min-w-[94px] rounded-[8px] bg-[#1f1f1f] px-3 py-2 text-[12px] text-[#b3b3b3] shadow-[rgb(18,18,18)_0px_1px_0px,rgb(77,77,77)_0px_0px_0px_1px_inset]">
-      <strong className="block text-[20px] font-bold leading-tight text-white">{value}</strong>
+      <strong className="block text-[20px] font-bold leading-tight text-white">
+        {value}
+      </strong>
       {label}
     </span>
   );
@@ -538,6 +576,74 @@ function FilterInput({
   );
 }
 
+function DateFilterInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selectedDate = parseDateInput(value);
+
+  return (
+    <label className="relative block">
+      <span className="mb-2 block text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
+        {label}
+      </span>
+      <button
+        type="button"
+        className="flex h-11 w-full items-center justify-between rounded-full bg-[#1f1f1f] px-4 text-left text-[14px] font-bold text-white shadow-[rgb(18,18,18)_0px_1px_0px,rgb(124,124,124)_0px_0px_0px_1px_inset] outline-none transition hover:bg-[#242424] focus:shadow-[rgb(18,18,18)_0px_1px_0px,#1ed760_0px_0px_0px_2px_inset]"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span className={value ? "text-white" : "text-[#7c7c7c]"}>
+          {value || "YYYY-MM-DD"}
+        </span>
+        <span className="text-[#1ed760]" aria-hidden="true">
+          ▾
+        </span>
+      </button>
+      {open ? (
+        <div className="spotify-date-popover" role="dialog" aria-label={`${label} calendar`}>
+          <DayPicker
+            mode="single"
+            selected={selectedDate}
+            defaultMonth={selectedDate ?? new Date()}
+            captionLayout="dropdown"
+            navLayout="after"
+            startMonth={new Date(2008, 0, 1)}
+            endMonth={new Date()}
+            disabled={{ after: new Date() }}
+            onSelect={(date) => {
+              if (!date) {
+                return;
+              }
+              onChange(formatDateInput(date));
+              setOpen(false);
+            }}
+          />
+          {value ? (
+            <button
+              type="button"
+              className="mt-2 h-9 w-full rounded-full bg-[#1f1f1f] text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3] transition hover:text-white"
+              onClick={() => {
+                onChange("");
+                setOpen(false);
+              }}
+            >
+              Clear date
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </label>
+  );
+}
+
 function SortableHeader({
   column,
   sortRules,
@@ -551,7 +657,11 @@ function SortableHeader({
 }) {
   const activeIndex = sortRules.findIndex((rule) => rule.column === column);
   const activeRule = activeIndex === -1 ? null : sortRules[activeIndex];
-  const marker = activeRule ? (activeRule.direction === "desc" ? "↓" : "↑") : "";
+  const marker = activeRule
+    ? activeRule.direction === "desc"
+      ? "↓"
+      : "↑"
+    : "";
   const sortPosition = activeIndex === -1 ? null : activeIndex + 1;
 
   return (
@@ -562,12 +672,19 @@ function SortableHeader({
           align === "right" ? "justify-end text-right" : "justify-start"
         }`}
         aria-sort={
-          activeRule ? (activeRule.direction === "desc" ? "descending" : "ascending") : "none"
+          activeRule
+            ? activeRule.direction === "desc"
+              ? "descending"
+              : "ascending"
+            : "none"
         }
         onClick={() => onSort(toggleSortRule(sortRules, column))}
       >
         <span>{columnLabels[column]}</span>
-        <span className="inline-block w-3 text-[14px] leading-none text-[#1ed760]" aria-hidden="true">
+        <span
+          className="inline-block w-3 text-[14px] leading-none text-[#1ed760]"
+          aria-hidden="true"
+        >
           {marker}
         </span>
         {sortPosition ? (

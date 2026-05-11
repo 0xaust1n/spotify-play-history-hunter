@@ -16,3 +16,106 @@ body {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
+
+.spotify-date-popover {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  background: #181818;
+  padding: 12px;
+  box-shadow: rgba(0, 0, 0, 0.5) 0 16px 32px;
+}
+
+.spotify-date-popover .rdp-root {
+  --rdp-accent-color: #1ed760;
+  --rdp-accent-background-color: #123d24;
+  --rdp-day-height: 34px;
+  --rdp-day-width: 34px;
+  --rdp-day_button-height: 34px;
+  --rdp-day_button-width: 34px;
+  --rdp-day_button-border-radius: 999px;
+  color: #ffffff;
+  margin: 0;
+}
+
+.spotify-date-popover .rdp-months {
+  max-width: 100%;
+}
+
+.spotify-date-popover .rdp-month {
+  width: 100%;
+}
+
+.spotify-date-popover .rdp-month_grid {
+  width: 100%;
+}
+
+.spotify-date-popover .rdp-caption_label,
+.spotify-date-popover .rdp-weekday {
+  color: #b3b3b3;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.spotify-date-popover .rdp-dropdowns {
+  gap: 6px;
+}
+
+.spotify-date-popover .rdp-dropdown {
+  border-radius: 999px;
+  border: 1px solid #3a3a3a;
+  background: #121212;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+}
+
+.spotify-date-popover .rdp-button_previous,
+.spotify-date-popover .rdp-button_next {
+  border-radius: 999px;
+  color: #b3b3b3;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.spotify-date-popover .rdp-button_previous:hover,
+.spotify-date-popover .rdp-button_next:hover {
+  background: #1f1f1f;
+  color: #1ed760;
+}
+
+.spotify-date-popover .rdp-day_button {
+  border: 0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.spotify-date-popover .rdp-day_button:hover {
+  background: #1f1f1f;
+  color: #1ed760;
+}
+
+.spotify-date-popover .rdp-selected .rdp-day_button {
+  background: #1ed760;
+  color: #000000;
+}
+
+.spotify-date-popover .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: #1ed760;
+}
+
+.spotify-date-popover .rdp-disabled .rdp-day_button {
+  color: #535353;
+}

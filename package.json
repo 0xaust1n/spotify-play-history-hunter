@@ -18,6 +18,7 @@
     "concurrently": "latest",
     "pg": "latest",
     "react": "latest",
+    "react-day-picker": "^10.0.0",
     "react-dom": "latest",
     "vite": "latest"
   },
