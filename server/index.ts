@@ -42,8 +42,13 @@ const server = Bun.serve({
 
     if (url.pathname === "/api/spotify/login") {
       const config = getSpotifyConfig();
-      if (!config.clientId || !config.clientSecret) {
-        return json({ error: "Missing SPOTIFY_CLIENT_ID or SPOTIFY_CLIENT_SECRET" }, 500);
+      if (!config.clientId) {
+        return json({ error: "Missing SPOTIFY_CLIENT_ID" }, 500);
+      }
+
+      const codeChallenge = url.searchParams.get("code_challenge");
+      if (!codeChallenge) {
+        return json({ error: "Missing code_challenge" }, 400);
       }
 
       const state = crypto.randomUUID();
@@ -52,6 +57,7 @@ const server = Bun.serve({
           clientId: config.clientId,
           redirectUri: config.redirectUri,
           state,
+          codeChallenge,
         }),
         302,
       );
@@ -66,13 +72,15 @@ const server = Bun.serve({
       const config = getSpotifyConfig();
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state");
-      const expectedState = parseCookie(request.headers.get("cookie")).spotify_oauth_state;
+      const cookies = parseCookie(request.headers.get("cookie"));
+      const expectedState = cookies.spotify_oauth_state;
+      const codeVerifier = cookies.spotify_code_verifier;
 
-      if (!code || !state || state !== expectedState) {
+      if (!code || !state || state !== expectedState || !codeVerifier) {
         return json({ error: "Invalid Spotify callback state" }, 400);
       }
 
-      const token = await exchangeSpotifyCode(code, config);
+      const token = await exchangeSpotifyCode(code, codeVerifier, config);
       const response = Response.redirect("http://127.0.0.1:3000/?spotify=connected", 302);
       response.headers.append(
         "set-cookie",
@@ -81,6 +89,10 @@ const server = Bun.serve({
       response.headers.append(
         "set-cookie",
         "spotify_oauth_state=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0",
+      );
+      response.headers.append(
+        "set-cookie",
+        "spotify_code_verifier=; SameSite=Lax; Path=/; Max-Age=0",
       );
       return response;
     }

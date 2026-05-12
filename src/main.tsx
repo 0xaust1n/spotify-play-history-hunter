@@ -51,6 +51,31 @@ const columnLabels: Record<SortColumn, string> = {
 
 const pageSize = 20;
 
+function generateCodeVerifier(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
+}
+
+async function generateCodeChallenge(verifier: string): Promise<string> {
+  const data = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
+}
+
+async function initiateSpotifyLogin(): Promise<void> {
+  const verifier = generateCodeVerifier();
+  const challenge = await generateCodeChallenge(verifier);
+  document.cookie = `spotify_code_verifier=${verifier}; SameSite=Lax; Path=/; Max-Age=600`;
+  window.location.href = `/api/spotify/login?code_challenge=${encodeURIComponent(challenge)}`;
+}
+
 function App() {
   const [artist, setArtist] = useState("");
   const [minStreams, setMinStreams] = useState("");
@@ -182,7 +207,7 @@ function App() {
 
     if (response.status === 401) {
       setPlaylistStatus("Spotify login required. Redirecting...");
-      window.location.href = "/api/spotify/login";
+      void initiateSpotifyLogin();
       return;
     }
 
@@ -218,7 +243,7 @@ function App() {
 
     if (response.status === 401) {
       setPlaybackStatus("Spotify login required. Redirecting...");
-      window.location.href = "/api/spotify/login";
+      void initiateSpotifyLogin();
       return;
     }
 

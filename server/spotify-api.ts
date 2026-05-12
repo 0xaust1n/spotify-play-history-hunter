@@ -1,6 +1,5 @@
 export type SpotifyConfig = {
   clientId: string;
-  clientSecret: string;
   redirectUri: string;
 };
 
@@ -8,6 +7,7 @@ export type SpotifyAuthorizeOptions = {
   clientId: string;
   redirectUri: string;
   state: string;
+  codeChallenge: string;
 };
 
 export type SpotifyTokenResponse = {
@@ -34,7 +34,6 @@ const spotifyScope = "playlist-modify-public user-modify-playback-state user-rea
 export function getSpotifyConfig(): SpotifyConfig {
   return {
     clientId: Bun.env.SPOTIFY_CLIENT_ID ?? "",
-    clientSecret: Bun.env.SPOTIFY_CLIENT_SECRET ?? "",
     redirectUri: Bun.env.SPOTIFY_REDIRECT_URI ?? "http://127.0.0.1:8000/api/spotify/callback",
   };
 }
@@ -46,6 +45,8 @@ export function buildSpotifyAuthorizeUrl(options: SpotifyAuthorizeOptions): stri
     redirect_uri: options.redirectUri,
     scope: spotifyScope,
     state: options.state,
+    code_challenge_method: "S256",
+    code_challenge: options.codeChallenge,
   });
 
   return `https://accounts.spotify.com/authorize?${params.toString()}`;
@@ -82,24 +83,22 @@ export function chunkSpotifyUris(uris: string[]): string[][] {
   return chunks;
 }
 
-export function spotifyCredentialsHeader(config: SpotifyConfig): string {
-  return `Basic ${Buffer.from(`${config.clientId}:${config.clientSecret}`).toString("base64")}`;
-}
-
 export async function exchangeSpotifyCode(
   code: string,
+  codeVerifier: string,
   config: SpotifyConfig,
 ): Promise<SpotifyTokenResponse> {
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
-      authorization: spotifyCredentialsHeader(config),
       "content-type": "application/x-www-form-urlencoded",
     },
     body: new URLSearchParams({
       grant_type: "authorization_code",
       code,
       redirect_uri: config.redirectUri,
+      client_id: config.clientId,
+      code_verifier: codeVerifier,
     }),
   });
 

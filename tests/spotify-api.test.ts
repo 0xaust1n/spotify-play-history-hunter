@@ -13,6 +13,7 @@ describe("spotify api helpers", () => {
         clientId: "client-id",
         redirectUri: "http://127.0.0.1:8000/api/spotify/callback",
         state: "state-token",
+        codeChallenge: "challenge-hash",
       }),
     );
 
@@ -24,6 +25,8 @@ describe("spotify api helpers", () => {
       "playlist-modify-public user-modify-playback-state user-read-playback-state",
     );
     expect(url.searchParams.get("state")).toBe("state-token");
+    expect(url.searchParams.get("code_challenge_method")).toBe("S256");
+    expect(url.searchParams.get("code_challenge")).toBe("challenge-hash");
   });
 
   test("creates a play payload for a track uri", () => {
