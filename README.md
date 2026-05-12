@@ -2,6 +2,9 @@
 
 A local Bun + React app for exploring Spotify Extended Streaming History exports.
 
+## WIKi
+- WIKI維基百科 → [點我/Click-Me](https://github.com/0xaust1n/spotify-play-history-hunter/wiki)
+
 ## Get Your Spotify Play History
 
 Spotify Web API cannot provide your full lifetime streaming history. For full history analysis, download your Spotify data export:
