@@ -1,4 +1,4 @@
-# Spotify Streaming History Viewer
+# Spotify Play History Hunter
 
 A local Bun + React app for exploring Spotify Extended Streaming History exports.
 
@@ -54,11 +54,9 @@ Spotify OAuth is optional unless you want playlist creation or playback control:
 
 ```env
 SPOTIFY_CLIENT_ID=
-SPOTIFY_CLIENT_SECRET=
-SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/api/spotify/callback
 ```
 
-Use the same redirect URI in the Spotify Developer Dashboard.
+Only a Client ID is needed — no Client Secret required. Get one from the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
 
 ## Required environment
 
