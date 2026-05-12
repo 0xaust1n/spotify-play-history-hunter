@@ -2,3 +2,6 @@
 	path = infra
 	url = https://github.com/0xaust1n/spotify-play-history-hunter-terraform.git
 
+[submodule "wiki"]
+	path = docs/wiki
+	url = https://github.com/0xaust1n/spotify-play-history-hunter.wiki.git
