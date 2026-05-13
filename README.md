@@ -2,8 +2,8 @@
 
 A local Bun + React app for exploring Spotify Extended Streaming History exports.
 
-## WIKi
-- WIKI維基百科 → [點我/Click-Me](https://github.com/0xaust1n/spotify-play-history-hunter/wiki)
+## WIKI
+- WIKI維基百科 → [Click-Me/點我](https://github.com/0xaust1n/spotify-play-history-hunter/wiki)
 
 ## Get Your Spotify Play History
 
