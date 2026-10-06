@@ -18,6 +18,7 @@ import {
   type SortRule,
 } from "./lib/sort-state";
 import "./styles.css";
+import { toggleSearchTarget } from "./lib/search-targets";
 
 type TrackRow = {
   trackKey: string;
@@ -458,7 +459,7 @@ function App() {
                   placeholder={
                     searchTarget === "all"
                       ? "Song, artist, or album"
-                      : `Search ${searchTarget} names`
+                      : `Search ${searchTarget.split(",").join(" or ")} names`
                   }
                   onChange={(value) => {
                     setSearch(value);
@@ -477,10 +478,10 @@ function App() {
                     <button
                       key={target}
                       type="button"
-                      aria-pressed={searchTarget === target}
-                      className={`rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[1px] transition focus-visible:outline-2 focus-visible:outline-[#1ed760] ${searchTarget === target ? "bg-[#1ed760] text-black" : "bg-[#1f1f1f] text-[#b3b3b3] hover:text-white"}`}
+                      aria-pressed={searchTarget.split(",").includes(target)}
+                      className={`rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[1px] transition focus-visible:outline-2 focus-visible:outline-[#1ed760] ${searchTarget.split(",").includes(target) ? "bg-[#1ed760] text-black" : "bg-[#1f1f1f] text-[#b3b3b3] hover:text-white"}`}
                       onClick={() => {
-                        setSearchTarget(target);
+                        setSearchTarget((current) => toggleSearchTarget(current, target));
                         setPage(1);
                       }}
                     >
