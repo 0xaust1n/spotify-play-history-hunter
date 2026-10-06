@@ -8,6 +8,8 @@ describe("track API query parameters", () => {
       limit: 20,
       minStreams: null,
       notPlayedSince: null,
+      playedFrom: null,
+      playedTo: null,
       offset: 0,
       page: 1,
       sortRules: [],
@@ -27,6 +29,8 @@ describe("track API query parameters", () => {
       limit: 20,
       minStreams: null,
       notPlayedSince: null,
+      playedFrom: null,
+      playedTo: null,
       offset: 40,
       page: 3,
       sortRules: [
@@ -105,5 +109,15 @@ describe("track API query parameters", () => {
 
   test("uses stream count descending as the fallback when no sort rule is active", () => {
     expect(getTrackOrderBy([])).toBe("stream_count DESC, last_streamed_at DESC, track_key ASC");
+  });
+});
+
+test("accepts open date ranges and rejects impossible calendar dates", () => {
+  expect(
+    normalizeTrackQuery(new URLSearchParams({ playedFrom: "2026-01-01", playedTo: "2026-02-28" })),
+  ).toMatchObject({ playedFrom: "2026-01-01", playedTo: "2026-02-28" });
+  expect(normalizeTrackQuery(new URLSearchParams({ playedTo: "2026-02-30" }))).toMatchObject({
+    playedFrom: null,
+    playedTo: null,
   });
 });

@@ -22,6 +22,8 @@ export type TrackQueryResult = {
   total: number;
   minStreams: number | null;
   notPlayedSince: string | null;
+  playedFrom: string | null;
+  playedTo: string | null;
   sortRules: TrackQuery["sortRules"];
   strictMode: boolean;
   tracks: TrackRow[];
@@ -69,6 +71,8 @@ export async function queryTracks(
             AND artist_name IS NOT NULL
             AND ($1 = '' OR artist_name ILIKE '%' || $1 || '%')
             AND ($6::BOOLEAN = FALSE OR ms_played >= 30000)
+            AND ($7::DATE IS NULL OR ts >= ($7::DATE::TIMESTAMP AT TIME ZONE 'Asia/Taipei'))
+            AND ($8::DATE IS NULL OR ts < (($8::DATE + 1)::TIMESTAMP AT TIME ZONE 'Asia/Taipei'))
           GROUP BY spotify_track_uri, track_name, album_name, artist_name
         )
         SELECT
@@ -88,6 +92,8 @@ export async function queryTracks(
         effectiveQuery.limit,
         effectiveQuery.offset,
         effectiveQuery.strictMode,
+        effectiveQuery.playedFrom,
+        effectiveQuery.playedTo,
       ],
     );
 
@@ -102,6 +108,8 @@ export async function queryTracks(
       total: result.rows[0]?.total_count ?? 0,
       minStreams: effectiveQuery.minStreams,
       notPlayedSince: effectiveQuery.notPlayedSince,
+      playedFrom: effectiveQuery.playedFrom,
+      playedTo: effectiveQuery.playedTo,
       sortRules: effectiveQuery.sortRules,
       strictMode: effectiveQuery.strictMode,
       tracks: result.rows.map((row) => ({

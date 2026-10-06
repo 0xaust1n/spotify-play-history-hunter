@@ -18,6 +18,8 @@ export type TrackQuery = {
   limit: number;
   minStreams: number | null;
   notPlayedSince: string | null;
+  playedFrom: string | null;
+  playedTo: string | null;
   offset: number;
   page: number;
   sortRules: TrackSortRule[];
@@ -76,6 +78,8 @@ export function normalizeTrackQuery(params: URLSearchParams): TrackQuery {
     limit,
     minStreams: parseMinStreams(params.get("minStreams")),
     notPlayedSince: parseDate(params.get("notPlayedSince")),
+    playedFrom: parseDate(params.get("playedFrom")),
+    playedTo: parseDate(params.get("playedTo")),
     offset,
     page: Math.floor(offset / limit) + 1,
     sortRules: parseSortRules(params),
@@ -185,7 +189,7 @@ function parseDate(value: string | null): string | null {
   }
 
   const date = new Date(`${value}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
     return null;
   }
 

@@ -40,3 +40,29 @@ export function parseDateInput(value: string): Date | undefined {
 
   return date;
 }
+
+export function getRecentDateRange(period: "week" | "month" | "year", now = new Date()) {
+  const today = formatDateTime(now).slice(0, 10);
+  const end = parseDateInput(today)!;
+  const start = new Date(end);
+  if (period === "week") {
+    start.setDate(start.getDate() - 6);
+  } else {
+    const day = start.getDate();
+    start.setDate(1);
+    if (period === "month") start.setMonth(start.getMonth() - 1);
+    else start.setFullYear(start.getFullYear() - 1);
+    const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
+    start.setDate(Math.min(day, lastDay));
+  }
+  return { from: formatDateInput(start), to: today };
+}
+
+export function validateDateInput(value: string, min?: string, max?: string): string | null {
+  if (!value) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return "Use YYYY-MM-DD (for example, 2026-06-30).";
+  if (!parseDateInput(value)) return "This date does not exist.";
+  if (min && parseDateInput(min) && value < min) return `Date must be on or after ${min}.`;
+  if (max && parseDateInput(max) && value > max) return `Date must be on or before ${max}.`;
+  return null;
+}
