@@ -73,6 +73,10 @@ export async function queryTracks(
             AND ($6::BOOLEAN = FALSE OR ms_played >= 30000)
             AND ($7::DATE IS NULL OR ts >= ($7::DATE::TIMESTAMP AT TIME ZONE 'Asia/Taipei'))
             AND ($8::DATE IS NULL OR ts < (($8::DATE + 1)::TIMESTAMP AT TIME ZONE 'Asia/Taipei'))
+            AND ($9::TEXT = ''
+              OR ($10::TEXT IN ('all', 'track') AND strpos(lower(track_name), lower($9::TEXT)) > 0)
+              OR ($10::TEXT IN ('all', 'artist') AND strpos(lower(artist_name), lower($9::TEXT)) > 0)
+              OR ($10::TEXT IN ('all', 'album') AND strpos(lower(album_name), lower($9::TEXT)) > 0))
           GROUP BY spotify_track_uri, track_name, album_name, artist_name
         )
         SELECT
@@ -94,6 +98,8 @@ export async function queryTracks(
         effectiveQuery.strictMode,
         effectiveQuery.playedFrom,
         effectiveQuery.playedTo,
+        effectiveQuery.search,
+        effectiveQuery.searchTarget,
       ],
     );
 

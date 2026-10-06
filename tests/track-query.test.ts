@@ -5,6 +5,8 @@ describe("track API query parameters", () => {
   test("defaults to first page of 20 records with no explicit sort rules", () => {
     expect(normalizeTrackQuery(new URLSearchParams())).toEqual({
       artist: "",
+      search: "",
+      searchTarget: "all",
       limit: 20,
       minStreams: null,
       notPlayedSince: null,
@@ -26,6 +28,8 @@ describe("track API query parameters", () => {
 
     expect(normalizeTrackQuery(params)).toEqual({
       artist: "Laufey",
+      search: "",
+      searchTarget: "all",
       limit: 20,
       minStreams: null,
       notPlayedSince: null,
@@ -120,4 +124,22 @@ test("accepts open date ranges and rejects impossible calendar dates", () => {
     playedFrom: null,
     playedTo: null,
   });
+});
+
+test("trims global search independently of the legacy artist filter", () => {
+  expect(
+    normalizeTrackQuery(new URLSearchParams({ search: "  love  ", artist: " Laufey " })),
+  ).toMatchObject({ search: "love", artist: "Laufey" });
+  expect(normalizeTrackQuery(new URLSearchParams({ search: "   " })).search).toBe("");
+});
+
+test("accepts only supported search targets", () => {
+  for (const searchTarget of ["all", "track", "artist", "album"] as const) {
+    expect(normalizeTrackQuery(new URLSearchParams({ searchTarget })).searchTarget).toBe(
+      searchTarget,
+    );
+  }
+  expect(normalizeTrackQuery(new URLSearchParams({ searchTarget: "unknown" })).searchTarget).toBe(
+    "all",
+  );
 });

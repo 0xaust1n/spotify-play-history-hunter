@@ -15,6 +15,8 @@ export type TrackSortRule = {
 
 export type TrackQuery = {
   artist: string;
+  search: string;
+  searchTarget: "all" | "track" | "artist" | "album";
   limit: number;
   minStreams: number | null;
   notPlayedSince: string | null;
@@ -75,6 +77,8 @@ export function normalizeTrackQuery(params: URLSearchParams): TrackQuery {
 
   return {
     artist: params.get("artist")?.trim() ?? "",
+    search: params.get("search")?.trim() ?? "",
+    searchTarget: parseSearchTarget(params.get("searchTarget")),
     limit,
     minStreams: parseMinStreams(params.get("minStreams")),
     notPlayedSince: parseDate(params.get("notPlayedSince")),
@@ -202,4 +206,8 @@ function clamp(value: number, min: number, max: number): number {
   }
 
   return Math.min(Math.max(Math.trunc(value), min), max);
+}
+
+function parseSearchTarget(value: string | null): TrackQuery["searchTarget"] {
+  return value === "track" || value === "artist" || value === "album" ? value : "all";
 }
