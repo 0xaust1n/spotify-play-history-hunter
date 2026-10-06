@@ -16,7 +16,7 @@ export type TrackSortRule = {
 export type TrackQuery = {
   artist: string;
   search: string;
-  searchTarget: "all" | "track" | "artist" | "album";
+  searchTarget: string[];
   limit: number;
   minStreams: number | null;
   notPlayedSince: string | null;
@@ -208,6 +208,11 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(Math.trunc(value), min), max);
 }
 
-function parseSearchTarget(value: string | null): TrackQuery["searchTarget"] {
-  return value === "track" || value === "artist" || value === "album" ? value : "all";
+function parseSearchTarget(value: string | null): string[] {
+  const targets = (value ?? "all").split(",").map((target) => target.trim());
+  if (targets.includes("all")) return ["track", "artist", "album"];
+  const valid = [
+    ...new Set(targets.filter((target) => ["track", "artist", "album"].includes(target))),
+  ];
+  return valid.length ? valid : ["track", "artist", "album"];
 }

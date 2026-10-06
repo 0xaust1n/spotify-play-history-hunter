@@ -6,7 +6,7 @@ describe("track API query parameters", () => {
     expect(normalizeTrackQuery(new URLSearchParams())).toEqual({
       artist: "",
       search: "",
-      searchTarget: "all",
+      searchTarget: ["track", "artist", "album"],
       limit: 20,
       minStreams: null,
       notPlayedSince: null,
@@ -29,7 +29,7 @@ describe("track API query parameters", () => {
     expect(normalizeTrackQuery(params)).toEqual({
       artist: "Laufey",
       search: "",
-      searchTarget: "all",
+      searchTarget: ["track", "artist", "album"],
       limit: 20,
       minStreams: null,
       notPlayedSince: null,
@@ -133,13 +133,21 @@ test("trims global search independently of the legacy artist filter", () => {
   expect(normalizeTrackQuery(new URLSearchParams({ search: "   " })).search).toBe("");
 });
 
-test("accepts only supported search targets", () => {
-  for (const searchTarget of ["all", "track", "artist", "album"] as const) {
-    expect(normalizeTrackQuery(new URLSearchParams({ searchTarget })).searchTarget).toBe(
+test("normalizes single, multiple, duplicate and unsupported search targets", () => {
+  for (const searchTarget of ["track", "artist", "album"]) {
+    expect(normalizeTrackQuery(new URLSearchParams({ searchTarget })).searchTarget).toEqual([
       searchTarget,
-    );
+    ]);
   }
-  expect(normalizeTrackQuery(new URLSearchParams({ searchTarget: "unknown" })).searchTarget).toBe(
-    "all",
-  );
+  for (const searchTarget of ["all", "", "unknown", "all,track"]) {
+    expect(normalizeTrackQuery(new URLSearchParams({ searchTarget })).searchTarget).toEqual([
+      "track",
+      "artist",
+      "album",
+    ]);
+  }
+  expect(
+    normalizeTrackQuery(new URLSearchParams({ searchTarget: "track, artist,track,unknown" }))
+      .searchTarget,
+  ).toEqual(["track", "artist"]);
 });
