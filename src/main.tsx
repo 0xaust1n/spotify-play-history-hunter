@@ -1,8 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useId } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { createRoot } from "react-dom/client";
-import { formatDateInput, formatDateTime, parseDateInput } from "./lib/date";
+import {
+  formatDateInput,
+  formatDateTime,
+  parseDateInput,
+  getRecentDateRange,
+  validateDateInput,
+} from "./lib/date";
 import { getPaginationItems } from "./lib/pagination";
 import {
   serializeSortRules,
@@ -77,9 +83,12 @@ async function initiateSpotifyLogin(): Promise<void> {
 }
 
 function App() {
-  const [artist, setArtist] = useState("");
+  const [search, setSearch] = useState("");
+  const [searchTarget, setSearchTarget] = useState("all");
   const [minStreams, setMinStreams] = useState("");
   const [notPlayedSince, setNotPlayedSince] = useState("");
+  const [playedFrom, setPlayedFrom] = useState("");
+  const [playedTo, setPlayedTo] = useState("");
   const [strictMode, setStrictMode] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [playlistName, setPlaylistName] = useState("Spotify history playlist");
@@ -93,11 +102,23 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const today = formatDateTime(new Date()).slice(0, 10);
+  const datesInvalid = Boolean(
+    validateDateInput(playedFrom, undefined, playedTo && playedTo < today ? playedTo : today) ||
+    validateDateInput(playedTo, playedFrom, today) ||
+    validateDateInput(notPlayedSince, undefined, today),
+  );
+
   useEffect(() => {
+    if (datesInvalid) {
+      setLoading(false);
+      return;
+    }
     const controller = new AbortController();
     const offset = (page - 1) * pageSize;
     const params = new URLSearchParams({
-      artist,
+      search,
+      searchTarget,
       page: String(page),
       offset: String(offset),
       limit: String(pageSize),
@@ -108,6 +129,8 @@ function App() {
     if (notPlayedSince !== "") {
       params.set("notPlayedSince", notPlayedSince);
     }
+    if (playedFrom) params.set("playedFrom", playedFrom);
+    if (playedTo) params.set("playedTo", playedTo);
     if (sortRules.length > 0) {
       params.set("sort", serializeSortRules(sortRules));
     }
@@ -141,7 +164,18 @@ function App() {
       });
 
     return () => controller.abort();
-  }, [artist, minStreams, notPlayedSince, page, sortRules, strictMode]);
+  }, [
+    search,
+    searchTarget,
+    minStreams,
+    notPlayedSince,
+    playedFrom,
+    playedTo,
+    page,
+    sortRules,
+    strictMode,
+    datesInvalid,
+  ]);
 
   const summary = useMemo(() => {
     const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -158,9 +192,9 @@ function App() {
   }, [page, total, tracks.length]);
 
   const currentQuery = useMemo(() => {
-    const query: Record<string, string> = {};
-    if (artist.trim() !== "") {
-      query.artist = artist.trim();
+    const query: Record<string, string> = { searchTarget };
+    if (search.trim() !== "") {
+      query.search = search.trim();
     }
     if (minStreams.trim() !== "") {
       query.minStreams = minStreams.trim();
@@ -168,6 +202,8 @@ function App() {
     if (notPlayedSince !== "") {
       query.notPlayedSince = notPlayedSince;
     }
+    if (playedFrom) query.playedFrom = playedFrom;
+    if (playedTo) query.playedTo = playedTo;
     if (sortRules.length > 0) {
       query.sort = serializeSortRules(sortRules);
     }
@@ -176,9 +212,19 @@ function App() {
     }
 
     return query;
-  }, [artist, minStreams, notPlayedSince, sortRules, strictMode]);
+  }, [
+    search,
+    searchTarget,
+    minStreams,
+    notPlayedSince,
+    playedFrom,
+    playedTo,
+    sortRules,
+    strictMode,
+  ]);
 
   async function createPlaylistFromResults() {
+    if (datesInvalid) return;
     const confirmed = confirm(
       `Create a public Spotify playlist from the current filtered results?\n\nMax tracks: ${playlistMaxTracks || "100"}`,
     );
@@ -269,7 +315,7 @@ function App() {
               Spotify Streaming History
             </h1>
             <p className="mt-2 text-[14px] text-[#b3b3b3]">
-              Search by artist and review song-level play counts.
+              Search songs, artists, or albums and review play counts.
             </p>
           </div>
           <div
@@ -281,6 +327,14 @@ function App() {
           </div>
         </header>
 
+        {datesInvalid ? (
+          <p
+            role="status"
+            className="mb-3 rounded-[8px] bg-[#1f1f1f] px-4 py-3 text-[14px] text-[#f3727f]"
+          >
+            Fix the highlighted dates to update results. Showing the last valid results.
+          </p>
+        ) : null}
         {error ? (
           <div className="mb-3 rounded-[8px] bg-[#2a171a] px-4 py-3 text-[14px] font-bold text-[#f3727f]">
             API error: {error}
@@ -399,14 +453,41 @@ function App() {
             {filtersOpen ? (
               <div className="grid gap-4 px-4 pb-4">
                 <FilterInput
-                  label="Artist"
-                  value={artist}
-                  placeholder="Laufey"
+                  label="Search"
+                  value={search}
+                  placeholder={
+                    searchTarget === "all"
+                      ? "Song, artist, or album"
+                      : `Search ${searchTarget} names`
+                  }
                   onChange={(value) => {
-                    setArtist(value);
+                    setSearch(value);
                     setPage(1);
                   }}
                 />
+                <div role="group" aria-label="Search target" className="flex flex-wrap gap-2">
+                  {(
+                    [
+                      ["all", "All"],
+                      ["track", "Track"],
+                      ["artist", "Artist"],
+                      ["album", "Album"],
+                    ] as const
+                  ).map(([target, label]) => (
+                    <button
+                      key={target}
+                      type="button"
+                      aria-pressed={searchTarget === target}
+                      className={`rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[1px] transition focus-visible:outline-2 focus-visible:outline-[#1ed760] ${searchTarget === target ? "bg-[#1ed760] text-black" : "bg-[#1f1f1f] text-[#b3b3b3] hover:text-white"}`}
+                      onClick={() => {
+                        setSearchTarget(target);
+                        setPage(1);
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
                 <FilterInput
                   label="Min streams"
                   value={minStreams}
@@ -418,6 +499,72 @@ function App() {
                     setPage(1);
                   }}
                 />
+                <fieldset className="grid min-w-0 gap-3">
+                  <legend className="mb-2 text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
+                    Played between
+                  </legend>
+                  <div className="flex flex-wrap gap-2" aria-label="Quick date ranges">
+                    {(
+                      [
+                        ["week", "Past week"],
+                        ["month", "Past month"],
+                        ["year", "Past year"],
+                      ] as const
+                    ).map(([period, label]) => {
+                      const range = getRecentDateRange(period);
+                      const active = playedFrom === range.from && playedTo === range.to;
+                      return (
+                        <button
+                          key={period}
+                          type="button"
+                          aria-pressed={active}
+                          className={`rounded-full px-3 py-2 text-[11px] font-bold uppercase tracking-[1px] transition ${active ? "bg-[#1ed760] text-black" : "bg-[#1f1f1f] text-[#b3b3b3] hover:text-white"}`}
+                          onClick={() => {
+                            setPlayedFrom(range.from);
+                            setPlayedTo(range.to);
+                            setPage(1);
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      aria-pressed={!playedFrom && !playedTo}
+                      className="rounded-full bg-[#1f1f1f] px-3 py-2 text-[11px] font-bold uppercase tracking-[1px] text-[#b3b3b3] transition hover:text-white"
+                      onClick={() => {
+                        setPlayedFrom("");
+                        setPlayedTo("");
+                        setPage(1);
+                      }}
+                    >
+                      All time
+                    </button>
+                  </div>
+                  <DateFilterInput
+                    label="From"
+                    value={playedFrom}
+                    max={playedTo || undefined}
+                    onChange={(value) => {
+                      setPlayedFrom(value);
+                      setPage(1);
+                    }}
+                  />
+                  <DateFilterInput
+                    label="To"
+                    value={playedTo}
+                    min={playedFrom || undefined}
+                    onChange={(value) => {
+                      setPlayedTo(value);
+                      setPage(1);
+                    }}
+                  />
+                  <p className="text-[12px] leading-normal text-[#b3b3b3]">
+                    Counts and first/last plays reflect this period. Dates use Taiwan time and
+                    include both days.
+                  </p>
+                </fieldset>
                 <DateFilterInput
                   label="Not played since"
                   value={notPlayedSince}
@@ -442,9 +589,12 @@ function App() {
                   type="button"
                   className="h-10 rounded-full bg-[#1f1f1f] px-5 text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3] transition hover:text-white"
                   onClick={() => {
-                    setArtist("");
+                    setSearch("");
+                    setSearchTarget("all");
                     setMinStreams("");
                     setNotPlayedSince("");
+                    setPlayedFrom("");
+                    setPlayedTo("");
                     setStrictMode(false);
                     setSortRules([]);
                     setPage(1);
@@ -467,7 +617,8 @@ function App() {
                 />
                 <button
                   type="button"
-                  className="h-11 rounded-full bg-[#1ed760] px-5 text-[12px] font-bold uppercase tracking-[1.6px] text-black transition hover:scale-[1.02]"
+                  className="h-11 rounded-full bg-[#1ed760] px-5 text-[12px] font-bold uppercase tracking-[1.6px] text-black transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={datesInvalid}
                   onClick={() => {
                     void createPlaylistFromResults();
                   }}
@@ -581,31 +732,73 @@ function DateFilterInput({
   label,
   value,
   onChange,
+  min,
+  max,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  min?: string;
+  max?: string;
 }) {
   const [open, setOpen] = useState(false);
   const selectedDate = parseDateInput(value);
+  const inputId = useId();
+  const today = formatDateTime(new Date()).slice(0, 10);
+  const upperBound = max && max < today ? max : today;
+  const validationError = validateDateInput(value, min, upperBound);
 
   return (
-    <label className="relative block">
-      <span className="mb-2 block text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]">
-        {label}
-      </span>
-      <button
-        type="button"
-        className="flex h-11 w-full items-center justify-between rounded-full bg-[#1f1f1f] px-4 text-left text-[14px] font-bold text-white shadow-[rgb(18,18,18)_0px_1px_0px,rgb(124,124,124)_0px_0px_0px_1px_inset] outline-none transition hover:bg-[#242424] focus:shadow-[rgb(18,18,18)_0px_1px_0px,#1ed760_0px_0px_0px_2px_inset]"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
+    <div
+      className="relative block"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setOpen(false);
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+    >
+      <label
+        htmlFor={inputId}
+        className="mb-2 block text-[12px] font-bold uppercase tracking-[1.4px] text-[#b3b3b3]"
       >
-        <span className={value ? "text-white" : "text-[#7c7c7c]"}>{value || "YYYY-MM-DD"}</span>
-        <span className="text-[#1ed760]" aria-hidden="true">
-          ▾
-        </span>
-      </button>
+        {label}
+      </label>
+      <div
+        className={`flex h-11 w-full items-center rounded-full bg-[#1f1f1f] shadow-[inset_0_0_0_1px_#7c7c7c] focus-within:shadow-[inset_0_0_0_2px_#1ed760] ${validationError ? "!shadow-[inset_0_0_0_2px_#f3727f]" : ""}`}
+      >
+        <input
+          id={inputId}
+          type="text"
+          value={value}
+          placeholder="YYYY-MM-DD"
+          autoComplete="off"
+          spellCheck={false}
+          aria-invalid={Boolean(validationError)}
+          aria-describedby={validationError ? `${inputId}-error` : undefined}
+          className="h-full min-w-0 flex-1 rounded-full bg-transparent pl-4 text-[14px] font-bold text-white outline-none placeholder:text-[#7c7c7c]"
+          onChange={(event) => onChange(event.currentTarget.value)}
+        />
+        <button
+          type="button"
+          aria-label={`Open ${label} calendar`}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          className="h-11 w-11 shrink-0 rounded-full text-[#1ed760] outline-none hover:bg-[#292929] focus-visible:ring-2 focus-visible:ring-[#1ed760]"
+          onClick={() => setOpen((current) => !current)}
+        >
+          <span aria-hidden="true">▾</span>
+        </button>
+      </div>
+      {validationError ? (
+        <p
+          id={`${inputId}-error`}
+          role="alert"
+          className="mt-2 text-[12px] leading-normal text-[#f3727f]"
+        >
+          {validationError}
+        </p>
+      ) : null}
       {open ? (
         <div className="spotify-date-popover" role="dialog" aria-label={`${label} calendar`}>
           <DayPicker
@@ -616,7 +809,14 @@ function DateFilterInput({
             navLayout="after"
             startMonth={new Date(2008, 0, 1)}
             endMonth={new Date()}
-            disabled={{ after: new Date() }}
+            disabled={[
+              {
+                after:
+                  parseDateInput(upperBound) ??
+                  parseDateInput(formatDateTime(new Date()).slice(0, 10))!,
+              },
+              ...(min && parseDateInput(min) ? [{ before: parseDateInput(min)! }] : []),
+            ]}
             onSelect={(date) => {
               if (!date) {
                 return;
@@ -639,7 +839,7 @@ function DateFilterInput({
           ) : null}
         </div>
       ) : null}
-    </label>
+    </div>
   );
 }
 
